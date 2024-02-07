@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
     
 #     id = Column(Integer, primary_key=True)
 #     name = Column(String, nullable=False)
-#     locations = Column(String, nullable=False)
+#     location = Column(String, nullable=False)
 #     services = Column(JSON)
 #     rooms_quantity = Column(Integer, nullable=False)
 #     image_id = Column(Integer)
@@ -18,7 +18,7 @@ class Hotels(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
-    locations: Mapped[str] = mapped_column( nullable=False)
+    location: Mapped[str] = mapped_column( nullable=False)
     services: Mapped[list[str]] = mapped_column(JSON)
     rooms_quantity: Mapped[int] = mapped_column(nullable=False)
     image_id: Mapped[int]
