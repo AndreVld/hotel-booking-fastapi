@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.bookings.dao import BokingDAO
-from app.bookings.shemas import SBookings
+from app.bookings.schemas import SBookings
 
 
 router = APIRouter(
