@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.bookings.dao import BokingDAO
+from app.bookings.shemas import SBookings
 
 
 router = APIRouter(
@@ -7,7 +8,6 @@ router = APIRouter(
     tags=['Бронирование']
 )
 
-
 @router.get('')
-async def get_bookings():
+async def get_bookings() -> list[SBookings]:
     return await BokingDAO.find_all()
