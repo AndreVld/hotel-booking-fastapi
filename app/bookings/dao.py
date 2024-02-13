@@ -1,7 +1,8 @@
 from datetime import date
-from sqlalchemy import and_, func, insert, or_, select
+from sqlalchemy import and_, delete, func, insert, or_, select
 from app.dao.base import BaseDAO
 from app.bookings.models import Bookings
+from app.exceptions import NotFound
 from app.hotels.rooms.models import Rooms
 from app.database import async_session, engine, AsyncSession
 
@@ -21,16 +22,16 @@ class BokingDAO(BaseDAO):
             GROUP BY rooms.quantity, booking_rooms.id;
         """
         async with async_session() as session:
-            booked_rooms = select(Bookings).where(
-                and_(Bookings.room_id == room_id,
+            booked_rooms = select(cls.model).where(
+                and_(cls.model.room_id == room_id,
                     or_(
                         and_(
-                            Bookings.date_from >= date_from, 
-                            Bookings.date_from <= date_to
+                            cls.model.date_from >= date_from, 
+                            cls.model.date_from <= date_to
                             ), 
                         and_(
-                            Bookings.date_from <= date_from, 
-                            Bookings.date_to > date_from
+                            cls.model.date_from <= date_from, 
+                            cls.model.date_to > date_from
                             ),
                         ) 
                     )
@@ -48,20 +49,38 @@ class BokingDAO(BaseDAO):
 
             rooms_left = await session.execute(get_rooms_left)
             rooms_left: int = rooms_left.scalar()
-            print(rooms_left)
+
             if rooms_left > 0:
                 get_price = select(Rooms.price).filter_by(id=room_id)
                 price = await session.execute(get_price)
                 price: int = price.scalar()
-                add_booking = insert(Bookings).values(
+                add_booking = insert(cls.model).values(
                     room_id=room_id,
                     user_id=user_id,
                     date_from=date_from,
                     date_to=date_to,
                     price=price,
-                ).returning(Bookings)
+                ).returning(cls.model)
                 new_booking = await session.execute(add_booking)
                 await session.commit()
                 return new_booking.scalar()
             else:
                 return None
+    
+    @classmethod
+    async def delete(cls, booking_id, user_id: int):
+        async with async_session() as session:
+            result = await session.execute(
+                        delete(cls.model)
+                        .where(
+                            and_(
+                                cls.model.id == booking_id,
+                                cls.model.user_id == user_id
+                                )
+                            )
+                        .returning(cls.model)
+                    )
+            booking = result.scalar()
+            if not booking:
+                raise NotFound
+            await session.commit()

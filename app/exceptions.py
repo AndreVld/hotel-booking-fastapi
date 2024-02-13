@@ -40,3 +40,7 @@ class UserIsNotPresentException(CustomException):
 class RoomCannotBeBooked(CustomException):
     status_code = status.HTTP_409_CONFLICT
     detail = 'No rooms available'
+
+class NotFound(CustomException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail = 'Not found'
