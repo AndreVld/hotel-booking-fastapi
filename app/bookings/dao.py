@@ -11,7 +11,9 @@ class BokingDAO(BaseDAO):
     model = Bookings
 
     @classmethod
-    async def add(cls, user_id: int,room_id: int, date_from: date, date_to: date,):
+    async def get_num_of_available_rooms(
+        cls, room_id: int, 
+        date_from: date, date_to: date,) -> int:
         """
             WITH booking_rooms AS (SELECT * FROM bookings WHERE room_id=1 
             AND (date_from >= '2023-05-15' AND date_from <= '2023-06-20') 
@@ -50,7 +52,18 @@ class BokingDAO(BaseDAO):
             rooms_left = await session.execute(get_rooms_left)
             rooms_left: int = rooms_left.scalar()
 
-            if rooms_left > 0:
+            return rooms_left
+
+    @classmethod
+    async def add(cls, user_id: int,room_id: int, date_from: date, date_to: date,):
+
+        rooms_left = await cls.get_num_of_available_rooms(room_id=room_id,
+                                                    date_from=date_from,
+                                                    date_to=date_to)
+
+        if rooms_left > 0:
+
+            async with async_session() as session:
                 get_price = select(Rooms.price).filter_by(id=room_id)
                 price = await session.execute(get_price)
                 price: int = price.scalar()
@@ -64,8 +77,8 @@ class BokingDAO(BaseDAO):
                 new_booking = await session.execute(add_booking)
                 await session.commit()
                 return new_booking.scalar()
-            else:
-                return None
+        else:
+            return None
     
     @classmethod
     async def delete(cls, booking_id, user_id: int):
