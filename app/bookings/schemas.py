@@ -12,3 +12,9 @@ class SBookings(BaseModel):
     total_days: int
     total_cost: int
     
+class SBookingsWithRooms(SBookings):
+    name: str
+    description: str
+    image_id: int
+    services: list[str]
+    

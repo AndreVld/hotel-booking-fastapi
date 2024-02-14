@@ -10,6 +10,25 @@ from app.database import async_session, engine, AsyncSession
 class BokingDAO(BaseDAO):
     model = Bookings
 
+
+    @classmethod
+    async def find_all(cls, user_id):
+        async with async_session() as session:
+            bookings = await session.execute(select(
+                    cls.model.__table__.columns, 
+                    Rooms.description,
+                    Rooms.image_id,
+                    Rooms.services,
+                    Rooms.name
+                ).select_from(cls.model
+                ).join(Rooms, Rooms.id == cls.model.room_id, isouter=True
+                ).where(cls.model.user_id == user_id
+                ))
+            
+            return bookings.mappings().all()
+        
+                       
+
     @classmethod
     async def get_num_of_available_rooms(
         cls, room_id: int, 
@@ -42,7 +61,7 @@ class BokingDAO(BaseDAO):
             get_rooms_left = select(
                 (Rooms.quantity - func.count(booked_rooms.c.room_id)).label('rooms_left')
                 ).select_from(Rooms).join(
-                    booked_rooms, booked_rooms.c.room_id == Rooms.id, isouter=True
+                    booked_rooms, booked_rooms.c.room_id == Rooms.id, 
                 ).where(
                     Rooms.id == room_id
                 ).group_by(Rooms.quantity, booked_rooms.c.room_id)
