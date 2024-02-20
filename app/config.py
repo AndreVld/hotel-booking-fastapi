@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
 
+    REDIS_HOST: str
+    REDIS_PORT: int
     
     model_config = SettingsConfigDict(env_file=".env")
 
