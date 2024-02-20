@@ -12,7 +12,7 @@ class HotelsDAO(BaseDAO):
     model = Hotels
 
     @classmethod
-    async def get_hotels_with_free_rooms(
+    async def get_hotels_by_location(
         cls, 
         location: str, 
         date_from: date, 
@@ -47,7 +47,7 @@ class HotelsDAO(BaseDAO):
                         rooms, rooms.c.hotel_id == cls.model.id, isouter=True
                     ).where(
                             and_(
-                                cls.model.location==location,
+                                cls.model.location.like(f'%{location}%'),
                                 rooms.c.rooms_left > 0
                                 )
                             )

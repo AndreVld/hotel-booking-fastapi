@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <title>Document</title>
+    <script>
+        const search = () => {
+            let location = document.getElementById('location').value;
+            let date_to = document.getElementById('date_to').value;
+            let date_from = document.getElementById('date_from').value;
+            window.location.href = `/pages/hotels/?location=${location}&date_from=${date_from}&date_to=${date_to}`;
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo">
+            <img style="height: 4.9rem;border-radius: 100vh;" src="{{ url_for('static', path='css/img/logo.jpeg') }}"><p style="margin-left: 10px"; >Travel</p>
+        </a>
+        <ul>
+            <li><a href="#">Hotels</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+    </header>
+    <section class="banner" id="blur" >
+        <div class="container" >
+            <div>
+                <h1>Бронирование Отелей</h1>
+                <h4>Открой мир приключений с нашим удобным сервисом бронирования отелей. Найди идеальное жилье для своего незабываемого отдыха!</h2>
+                <div class="contBtn">
+                    <a onclick="toggle()" class="btn" >Найти</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="popup">
+        <div class="search_form" >
+                <div>
+                    <input id="location" type="text" placeholder="Введите место, которое хотели бы посетить...">
+                </div>
+                <div style="margin-left: 50px;" >
+                    <span>С</span>
+                    <select class="dates" id="date_from">
+                        <option value="2024-02-19">2023-05-15</option>
+                        <option value="2024-02-20">2024-02-20</option>
+                        <option value="2024-02-21">2024-02-21</option>
+                        <option value="2024-02-22">2024-02-22</option>
+                    </select>
+                    <span>По</span>
+                    <select class="dates" name="" id="date_to">
+                        <option value="2024-02-19">2023-06-30</option>
+                        <option value="2024-02-20">2024-02-20</option>
+                        <option value="2024-02-21">2024-02-21</option>
+                        <option value="2024-02-22">2024-02-22</option>
+                    </select>
+                </div>
+                <div>
+                        <button onclick="search()" >Найти</button>
+
+                </div>
+        </div>
+        <div class="content">
+            {% for hotel in hotels %}
+            <div class="cards">
+                
+
+                <div class="contentImg">
+                    <img src="{{ url_for('static', path='images/' + hotel.image_id|string + '.webp') }}" alt="#">
+                </div>
+                <div class="contentBx">
+                    <h2>{{ hotel.name }}</h2>
+                    <h4>{{ hotel.location }}</h4>
+                    <p>{% for service in hotel.services %}
+                            {{ service }},
+                        {% endfor %}
+                    </p>
+                    <h4>осталось {{ hotel.rooms_left }} из {{ hotel.rooms_quantity }}</h4>
+                </div>
+                <div>
+                    <a href="#">Booking</a>
+                </div>
+                
+            </div>
+            {% endfor %}
+            
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        function toggle(){
+            let blur = document.getElementById('blur');
+            blur.classList.toggle('active')
+
+            let popup = document.getElementById('popup');
+            popup.classList.toggle('active')
+        }
+    </script>
+
+</body>
+</html>
