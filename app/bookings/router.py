@@ -1,12 +1,12 @@
 from datetime import date
 from typing import Annotated
-from fastapi import APIRouter, Depends, Path, Request, status
+from fastapi import APIRouter, Depends, Path, status
 from app.bookings.dao import BokingDAO
-from app.bookings.schemas import SBookingsWithRooms
+from app.bookings.schemas import SBookingsWithRooms, SBookings
 from app.exceptions import DateFromCannotBeAfterDateTo, RoomCannotBeBooked
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-
+from app.tasks.tasks import send_booking_confirmation_email
 
 router = APIRouter(
     prefix='/bookings',
@@ -29,6 +29,9 @@ async def add_booking(
     booking =  await BokingDAO.add(user_id=user.id, room_id=room_id, date_from=date_from, date_to=date_to)
     if not booking:
         raise RoomCannotBeBooked
+    booking_dict = SBookings.model_validate(booking).model_dump()
+    send_booking_confirmation_email.delay(booking_dict, user.email)
+    return booking
 
 @router.delete('/{booking_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_booking(

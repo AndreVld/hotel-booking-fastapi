@@ -10,7 +10,7 @@ router = APIRouter(
 
 templates = Jinja2Templates(directory='app/templates')
 
-@router.get('/hotels/')
+@router.get('/hotels')
 async def get_hotels_page(
     request: Request,
     hotels = Depends(get_hotels_by_location_and_date)    

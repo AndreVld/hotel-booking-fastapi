@@ -2,9 +2,8 @@ from datetime import date
 from sqlalchemy import and_, delete, func, insert, or_, select
 from app.dao.base import BaseDAO
 from app.bookings.models import Bookings
-from app.exceptions import NotFound
 from app.hotels.rooms.models import Rooms
-from app.database import async_session, engine, AsyncSession
+from app.database import async_session
 
 
 class BokingDAO(BaseDAO):
@@ -59,9 +58,9 @@ class BokingDAO(BaseDAO):
                 ).cte('booked_rooms')
             
             get_rooms_left = select(
-                (Rooms.quantity - func.count(booked_rooms.c.room_id)).label('rooms_left')
+                (Rooms.quantity - func.count(booked_rooms.c.room_id).filter(booked_rooms.c.room_id.is_not(None))).label('rooms_left')
                 ).select_from(Rooms).join(
-                    booked_rooms, booked_rooms.c.room_id == Rooms.id, 
+                    booked_rooms, booked_rooms.c.room_id == Rooms.id, isouter=True
                 ).where(
                     Rooms.id == room_id
                 ).group_by(Rooms.quantity, booked_rooms.c.room_id)
@@ -70,7 +69,6 @@ class BokingDAO(BaseDAO):
 
             rooms_left = await session.execute(get_rooms_left)
             rooms_left: int = rooms_left.scalar()
-
             return rooms_left
 
     @classmethod
@@ -110,9 +108,5 @@ class BokingDAO(BaseDAO):
                                 cls.model.user_id == user_id
                                 )
                             )
-                        .returning(cls.model)
                     )
-            booking = result.scalar()
-            if not booking:
-                raise NotFound
             await session.commit()

@@ -11,6 +11,9 @@ class SBookings(BaseModel):
     price: int
     total_days: int
     total_cost: int
+
+    class Config:
+        from_attributes = True
     
 class SBookingsWithRooms(SBookings):
     name: str

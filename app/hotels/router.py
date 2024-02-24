@@ -33,4 +33,4 @@ async def get_hotels_by_location_and_date(
 @router.get('/id/{hotel_id}')
 @cache(expire=60)
 async def get_hotel_by_id(hotel_id: Annotated[int, Path()]) -> SHotels:
-    return await HotelsDAO.find_one_or_none(id=hotel_id)
+    return await HotelsDAO.find_by_id(hotel_id)
