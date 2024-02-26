@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
+from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UserAdmin
 from app.bookings.router import router as bookings_router
 from app.users.router import router as users_router
 from app.hotels.router import router as hotels_router
@@ -11,6 +12,9 @@ from app.images.router import router as img_router
 from redis import asyncio as aioredis
 from fastapi_cache.backends.redis import RedisBackend
 from app.config import settings
+from sqladmin import Admin
+from app.database import engine
+from app.admin.auth import auth_backend
 
 
 @asynccontextmanager
@@ -26,6 +30,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+admin = Admin(app, engine, authentication_backend=auth_backend)
+
+admin.add_view(UserAdmin)
+admin.add_view(BookingsAdmin)
+admin.add_view(HotelsAdmin)
+admin.add_view(RoomsAdmin)
+
+
 app.mount(path='/static', app=StaticFiles(directory='app/static'), name='static')
 
 app.include_router(users_router)
@@ -34,12 +46,3 @@ app.include_router(hotels_router)
 app.include_router(rooms_router)
 app.include_router(pages_router)
 app.include_router(img_router)
-
-
-
-
-# app = VersionedFastAPI(app,
-#     version_format='{major}',
-#     prefix_format='/api/v{major}',
-#     lifespan=lifespan,
-# )

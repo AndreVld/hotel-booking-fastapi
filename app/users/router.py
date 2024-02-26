@@ -28,12 +28,12 @@ async def login_user(responce: Response, user_data: SUserAuth):
     if not user:
         raise IncorrectEmailOrPasswordException
     access_token = create_access_token({'sub': str(user.id)})
-    responce.set_cookie('booking_access_token', access_token, httponly=True)
+    responce.set_cookie('access_token', access_token, httponly=True)
     return user
 
 @router.post('/logout')
 async def logout_user(responce: Response):
-    responce.delete_cookie('booking_access_token')
+    responce.delete_cookie('access_token')
 
 
 @router.get('/me')

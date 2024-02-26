@@ -100,13 +100,13 @@ class BokingDAO(BaseDAO):
     @classmethod
     async def delete(cls, booking_id, user_id: int):
         async with async_session() as session:
-            result = await session.execute(
-                        delete(cls.model)
-                        .where(
-                            and_(
-                                cls.model.id == booking_id,
-                                cls.model.user_id == user_id
-                                )
+            await session.execute(
+                    delete(cls.model)
+                    .where(
+                        and_(
+                            cls.model.id == booking_id,
+                            cls.model.user_id == user_id
                             )
+                        )
                     )
             await session.commit()
