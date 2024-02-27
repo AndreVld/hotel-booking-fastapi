@@ -2,7 +2,7 @@ from datetime import date
 from typing import Annotated
 from fastapi import APIRouter, Depends, Path, status
 from app.bookings.dao import BokingDAO
-from app.bookings.schemas import SBookingsWithRooms, SBookings
+from app.bookings.schemas import SBookings
 from app.exceptions import DateFromCannotBeAfterDateTo, RoomCannotBeBooked
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 @router.get('')
-async def get_bookings(user: Users = Depends(get_current_user)) -> list[SBookingsWithRooms]:
+async def get_bookings(user: Users = Depends(get_current_user)) -> list[SBookings]:
     return await BokingDAO.find_all(user_id=user.id)
 
 @router.post('')

@@ -16,8 +16,8 @@ router = APIRouter(
 @cache(expire=20)
 async def get_hotels_by_location_and_date(
         location: str,
-        date_from: Annotated[date, Query(example=datetime.now().date())],
-        date_to: Annotated[date, Query(example=datetime.now().date() + timedelta(days=25))]
+        date_from: Annotated[date, Query(description=f'example: {datetime.now().date()}')],
+        date_to: Annotated[date, Query(description=f'example: {datetime.now().date() + timedelta(days=25)}')]
     ) -> list[SHotelInfo]:
     
     if date_from > date_to:

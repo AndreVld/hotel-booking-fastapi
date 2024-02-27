@@ -2,6 +2,8 @@ from sqlalchemy import JSON
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.hotels.rooms.models import Rooms
+
 
 class Hotels(Base):
     __tablename__ = 'hotels'
@@ -13,7 +15,7 @@ class Hotels(Base):
     rooms_quantity: Mapped[int] = mapped_column(nullable=False)
     image_id: Mapped[int]
     
-    rooms: Mapped[list['Rooms']] = relationship(back_populates='hotel')
+    rooms: Mapped[list[Rooms]] = relationship(back_populates='hotel')
     
 
     def __str__(self) -> str:
