@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from typing import Annotated
 from fastapi import APIRouter, Path, Query
-from app.exceptions import DateFromCannotBeAfterDateTo
+from app.exceptions import DateFromCannotBeAfterDateTo, DateFromCannotBeEqualDate, CannotBookHotelForLongPeriod
 from app.hotels.dao import HotelsDAO
 from app.hotels.schemas import SHotelInfo, SHotels
 from fastapi_cache.decorator import cache
@@ -13,7 +13,6 @@ router = APIRouter(
 )
 
 @router.get('/{location}')
-@cache(expire=20)
 async def get_hotels_by_location_and_date(
         location: str,
         date_from: Annotated[date, Query(description=f'example: {datetime.now().date()}')],
@@ -22,7 +21,11 @@ async def get_hotels_by_location_and_date(
     
     if date_from > date_to:
         raise DateFromCannotBeAfterDateTo
-
+    if date_from == date_to:
+        raise DateFromCannotBeEqualDate
+    if (date_to - date_from).days > 31:
+        raise CannotBookHotelForLongPeriod 
+    
     hotels = await HotelsDAO.get_hotels_by_location(
         location=location,
         date_from=date_from,

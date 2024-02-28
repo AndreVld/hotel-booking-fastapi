@@ -45,3 +45,9 @@ class RoomCannotBeBooked(CustomException):
 class DateFromCannotBeAfterDateTo(CustomException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = 'Check-in date cannot be later than check-out date'
+
+class DateFromCannotBeEqualDate(DateFromCannotBeAfterDateTo):
+    detail = 'Check-in date cannot coincide with check-out date'
+
+class CannotBookHotelForLongPeriod(DateFromCannotBeAfterDateTo):
+    detail = 'Not possible to book hotel for more than month'

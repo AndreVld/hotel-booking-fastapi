@@ -1,7 +1,22 @@
-from datetime import datetime
 from fastapi import Response
 from httpx import AsyncClient
 import pytest
+
+
+
+@pytest.mark.parametrize('location, date_from, date_to, status_code', [
+    ('Алтай', '2025-06-15', '2025-05-11', 400), # date_from > date_to
+    ('Алтай', '2025-04-15', '2025-04-15', 400), # date_from = date_to
+    ('Алтай', '2025-04-15', '2025-05-20', 400), # more than 31 days
+    ('Алтай', '2025-04-15', '2025-05-11', 200), # correct dates
+])
+async def test_get_hotels_by_location_and_date(location, date_from, date_to, status_code, ac: AsyncClient):
+    response: Response = await ac.get(f'/hotels/{location}', params={
+        'date_from' : date_from,
+        'date_to': date_to
+    })
+
+    assert response.status_code == status_code
 
 
 @pytest.mark.parametrize('room_id, date_from, date_to, booked_rooms, status_code', [
