@@ -56,3 +56,14 @@ async def prepare_database():
 async def ac():
     async with AsyncClient(app=fatapi_app, base_url='http://test') as client:
         yield client
+
+
+@pytest.fixture(scope='session')
+async def authenticated_ac():
+    async with AsyncClient(app=fatapi_app, base_url='http://test') as client:
+        await client.post('/auth/login', json={
+            'email':'test@test.com',
+            'password': 'tests',
+        })
+        assert client.cookies['access_token']
+        yield client
