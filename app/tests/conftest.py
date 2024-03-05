@@ -1,42 +1,40 @@
-import asyncio
-from datetime import datetime
 import json
+from datetime import datetime
+
 import pytest
-from sqlalchemy import insert
-from app.config import settings
-from app.bookings.models import Bookings
-from app.database import Base, async_session, engine
-from app.hotels.rooms.models import Rooms
-from app.users.models import Users
-from app.hotels.models import Hotels
 from httpx import AsyncClient
+from sqlalchemy import insert
+
+from app.bookings.models import Bookings
+from app.config import settings
+from app.database import Base, async_session, engine
+from app.hotels.models import Hotels
+from app.hotels.rooms.models import Rooms
 from app.main import app as fatapi_app
+from app.users.models import Users
 
 
 def open_mock_json(model: str):
-    with open(f'app/tests/mock_{model}.json', encoding='utf-8') as file:
+    with open(f"app/tests/mock_{model}.json", encoding="utf-8") as file:
         return json.load(file)
-        
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 async def prepare_database():
-    assert settings.MODE == 'TEST'
+    assert settings.MODE == "TEST"
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-        
 
-    hotels = open_mock_json('hotels')
-    rooms = open_mock_json('rooms')
-    users = open_mock_json('users')
-    bookings = open_mock_json('bookings')
+    hotels = open_mock_json("hotels")
+    rooms = open_mock_json("rooms")
+    users = open_mock_json("users")
+    bookings = open_mock_json("bookings")
 
     for booking in bookings:
-        booking['date_from'] = datetime.strptime(booking['date_from'], '%Y-%m-%d')
-        booking['date_to'] = datetime.strptime(booking['date_to'], '%Y-%m-%d')
-
+        booking["date_from"] = datetime.strptime(booking["date_from"], "%Y-%m-%d")
+        booking["date_to"] = datetime.strptime(booking["date_to"], "%Y-%m-%d")
 
     async with async_session() as session:
         add_hotels = insert(Hotels).values(hotels)
@@ -52,18 +50,21 @@ async def prepare_database():
         await session.commit()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 async def ac():
-    async with AsyncClient(app=fatapi_app, base_url='http://test') as client:
+    async with AsyncClient(app=fatapi_app, base_url="http://test") as client:
         yield client
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def authenticated_ac():
-    async with AsyncClient(app=fatapi_app, base_url='http://test') as client:
-        await client.post('/auth/login', json={
-            'email':'test@test.com',
-            'password': 'tests',
-        })
-        assert client.cookies['access_token']
+    async with AsyncClient(app=fatapi_app, base_url="http://test") as client:
+        await client.post(
+            "/auth/login",
+            json={
+                "email": "test@test.com",
+                "password": "tests",
+            },
+        )
+        assert client.cookies["access_token"]
         yield client

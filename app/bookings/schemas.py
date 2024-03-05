@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -14,12 +15,12 @@ class SBookings(BaseModel):
 
     # class Config:
     #     from_attributes = True
-    
-    model_config = ConfigDict(from_attributes=True, extra='allow')
-    
+
+    model_config = ConfigDict(from_attributes=True, extra="allow")
+
+
 # class SBookingsWithRooms(SBookings):
 #     name: str
 #     description: str
 #     image_id: int
 #     services: list[str]
-    

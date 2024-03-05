@@ -1,25 +1,26 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
+from sqladmin import Admin
+
+from app.admin.auth import auth_backend
 from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UserAdmin
 from app.bookings.router import router as bookings_router
-from app.users.router import router as users_router
-from app.hotels.router import router as hotels_router
-from app.hotels.rooms.router import router as rooms_router
-from app.pages.router import router as pages_router
-from fastapi.staticfiles import StaticFiles
-from app.images.router import router as img_router
-from redis import asyncio as aioredis
-from fastapi_cache.backends.redis import RedisBackend
 from app.config import settings
-from sqladmin import Admin
 from app.database import engine
-from app.admin.auth import auth_backend
+from app.hotels.rooms.router import router as rooms_router
+from app.hotels.router import router as hotels_router
+from app.images.router import router as img_router
+from app.pages.router import router as pages_router
+from app.users.router import router as users_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # при запуске
     redis = aioredis.from_url(
         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
         encoding="utf8",
@@ -27,6 +28,7 @@ async def lifespan(app: FastAPI):
     )
     FastAPICache.init(RedisBackend(redis), prefix="cache")
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -38,7 +40,7 @@ admin.add_view(HotelsAdmin)
 admin.add_view(RoomsAdmin)
 
 
-app.mount(path='/static', app=StaticFiles(directory='app/static'), name='static')
+app.mount(path="/static", app=StaticFiles(directory="app/static"), name="static")
 
 app.include_router(users_router)
 app.include_router(bookings_router)
