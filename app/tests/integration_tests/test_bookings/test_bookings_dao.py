@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 import pytest
-from app.bookings.dao import BokingDAO
+from app.bookings.dao import BookingDAO
 
 
 @pytest.mark.parametrize('user_id, room_id, date_from, date_to', [
@@ -9,8 +9,8 @@ from app.bookings.dao import BokingDAO
     (1, 5, dt.strptime('2026-06-10', '%Y-%m-%d'),dt.strptime('2026-06-24', '%Y-%m-%d')),
     (2, 1, dt.strptime('2026-07-10', '%Y-%m-%d'), dt.strptime('2026-07-24', '%Y-%m-%d')),
 ]) 
-async def test_crud(user_id, room_id, date_from, date_to):
-    new_booking = await BokingDAO.add(
+async def test_crud_bookings(user_id, room_id, date_from, date_to):
+    new_booking = await BookingDAO.add(
         user_id = user_id,
         room_id = room_id,
         date_from = date_from,
@@ -19,18 +19,18 @@ async def test_crud(user_id, room_id, date_from, date_to):
     assert new_booking.user_id == user_id
     assert new_booking.room_id == room_id
 
-    booking = await BokingDAO.find_by_id(new_booking.id)
+    booking = await BookingDAO.find_by_id(new_booking.id)
     assert booking.user_id == user_id
     assert booking.room_id == room_id
 
-    await BokingDAO.delete(booking.id, booking.user_id)
+    await BookingDAO.delete(booking.id, booking.user_id)
 
-    booking = await BokingDAO.find_by_id(new_booking.id)
+    booking = await BookingDAO.find_by_id(new_booking.id)
     assert booking is None
 
 
 async def test_add_and_get_booking():
-    new_booking = await BokingDAO.add(
+    new_booking = await BookingDAO.add(
         user_id = 2,
         room_id = 2,
         date_from = dt.strptime('2026-07-10', '%Y-%m-%d'),
@@ -40,7 +40,7 @@ async def test_add_and_get_booking():
     assert new_booking.user_id == 2
     assert new_booking.room_id == 2
 
-    new_booking = await BokingDAO.find_by_id(new_booking.id)
+    new_booking = await BookingDAO.find_by_id(new_booking.id)
 
     assert new_booking is not None
 
