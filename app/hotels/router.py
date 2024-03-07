@@ -8,6 +8,7 @@ from app.exceptions import (
     CannotBookHotelForLongPeriod,
     DateFromCannotBeAfterDateTo,
     DateFromCannotBeEqualDate,
+    ServerErrorException,
 )
 from app.hotels.dao import HotelsDAO
 from app.hotels.schemas import SHotelInfo, SHotels
@@ -35,6 +36,9 @@ async def get_hotels_by_location_and_date(
     hotels = await HotelsDAO.get_hotels_by_location(
         location=location, date_from=date_from, date_to=date_to
     )
+    if hotels is None:
+        raise ServerErrorException
+
     return hotels
 
 

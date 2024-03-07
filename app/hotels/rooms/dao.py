@@ -1,11 +1,13 @@
 from datetime import date
 
 from sqlalchemy import and_, func, or_, select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
 from app.database import async_session
 from app.hotels.rooms.models import Rooms
+from app.logger import logger
 
 
 class RoomsDAO(BaseDAO):
@@ -29,20 +31,35 @@ class RoomsDAO(BaseDAO):
         days_book_room = (date_to - date_from).days
 
         async with async_session() as session:
-            rooms = await session.execute(
-                select(
-                    cls.model.__table__.columns,
-                    (cls.model.price * days_book_room).label("total_cost"),
-                    (cls.model.quantity - func.count(booked_rooms.c.id)).label(
-                        "rooms_left"
-                    ),
+            try:
+                rooms = await session.execute(
+                    select(
+                        cls.model.__table__.columns,
+                        (cls.model.price * days_book_room).label("total_cost"),
+                        (cls.model.quantity - func.count(booked_rooms.c.id)).label(
+                            "rooms_left"
+                        ),
+                    )
+                    .select_from(cls.model)
+                    .join(
+                        booked_rooms,
+                        booked_rooms.c.room_id == cls.model.id,
+                        isouter=True,
+                    )
+                    .where(cls.model.hotel_id == hotel_id)
+                    .group_by(cls.model.id)
                 )
-                .select_from(cls.model)
-                .join(
-                    booked_rooms, booked_rooms.c.room_id == cls.model.id, isouter=True
-                )
-                .where(cls.model.hotel_id == hotel_id)
-                .group_by(cls.model.id)
-            )
 
-            return rooms.mappings().all()
+                return rooms.mappings().all()
+            except SQLAlchemyError:
+                extra = {
+                    "param": {
+                        "hotel_id": hotel_id,
+                        "date_from": date_from,
+                        "date_to": date_to,
+                    }
+                }
+                logger.error(
+                    "An error occurred while finding rooms", extra=extra, exc_info=True
+                )
+                return None

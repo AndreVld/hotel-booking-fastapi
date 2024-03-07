@@ -13,8 +13,8 @@ celery_app = Celery(
 celery_app.conf.beat_schedule = {
     "check-in tomorrow": {
         "task": "email.booking_reminder_1day",
-        "schedule": 50,  # seconds
-        # 'schedule' : crontab(minute=30, hour=9),
+        # "schedule": 50,  # seconds
+        "schedule": crontab(minute=30, hour=9),
     },
     "check-in 3 days": {
         "task": "email.booking_reminder_3day",

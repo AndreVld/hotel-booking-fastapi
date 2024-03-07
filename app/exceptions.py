@@ -1,49 +1,49 @@
 from fastapi import HTTPException, status
 
 
-class CustomException(HTTPException):
-    status_code = 500
-    detail = ""
+class ServerErrorException(HTTPException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Server Error"
 
     def __init__(self):
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
-class UserAlreadyExistsException(CustomException):
+class UserAlreadyExistsException(ServerErrorException):
     status_code = status.HTTP_409_CONFLICT
     detail = "User already exists"
 
 
-class IncorrectEmailOrPasswordException(CustomException):
+class IncorrectEmailOrPasswordException(ServerErrorException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Incorrect email or login"
 
 
-class TokenExpiredException(CustomException):
+class TokenExpiredException(ServerErrorException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Token expired"
 
 
-class TokenAbsentException(CustomException):
+class TokenAbsentException(ServerErrorException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Token absent"
 
 
-class IncorrectTokenFormatException(CustomException):
+class IncorrectTokenFormatException(ServerErrorException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Incorrect token format"
 
 
-class UserIsNotPresentException(CustomException):
+class UserIsNotPresentException(ServerErrorException):
     status_code = status.HTTP_401_UNAUTHORIZED
 
 
-class RoomCannotBeBooked(CustomException):
+class RoomCannotBeBooked(ServerErrorException):
     status_code = status.HTTP_409_CONFLICT
     detail = "No rooms available"
 
 
-class DateFromCannotBeAfterDateTo(CustomException):
+class DateFromCannotBeAfterDateTo(ServerErrorException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = "Check-in date cannot be later than check-out date"
 

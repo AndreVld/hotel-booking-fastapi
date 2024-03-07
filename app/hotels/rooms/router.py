@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Path, Query
 
-from app.exceptions import DateFromCannotBeAfterDateTo
+from app.exceptions import DateFromCannotBeAfterDateTo, ServerErrorException
 from app.hotels.rooms.dao import RoomsDAO
 from app.hotels.rooms.schemas import SRooms
 from app.hotels.router import router
@@ -19,6 +19,9 @@ async def get_rooms(
     if date_from > date_to:
         raise DateFromCannotBeAfterDateTo
 
-    return await RoomsDAO.find_all(
+    rooms = await RoomsDAO.find_all(
         hotel_id=hotel_id, date_from=date_from, date_to=date_to
     )
+    if rooms is None:
+        raise ServerErrorException
+    return rooms

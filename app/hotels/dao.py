@@ -2,12 +2,14 @@ from datetime import date
 from operator import and_
 
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
 from app.database import async_session
 from app.hotels.models import Hotels
 from app.hotels.rooms.models import Rooms
+from app.logger import logger
 
 
 class HotelsDAO(BaseDAO):
@@ -49,15 +51,30 @@ class HotelsDAO(BaseDAO):
         )
 
         async with async_session() as session:
-            hotels = await session.execute(
-                select(cls.model.__table__.columns, rooms.c.rooms_left)
-                .select_from(cls.model)
-                .join(rooms, rooms.c.hotel_id == cls.model.id, isouter=True)
-                .where(
-                    and_(
-                        cls.model.location.like(f"%{location}%"), rooms.c.rooms_left > 0
+            try:
+                hotels = await session.execute(
+                    select(cls.model.__table__.columns, rooms.c.rooms_left)
+                    .select_from(cls.model)
+                    .join(rooms, rooms.c.hotel_id == cls.model.id, isouter=True)
+                    .where(
+                        and_(
+                            cls.model.location.like(f"%{location}%"),
+                            rooms.c.rooms_left > 0,
+                        )
                     )
                 )
-            )
 
-            return hotels.mappings().all()
+                return hotels.mappings().all()
+            except SQLAlchemyError:
+                extra = {
+                    "param": {
+                        "location": location,
+                        "date_from": date_from,
+                        "date_to": date_to,
+                    }
+                }
+                logger.error(
+                    "An error occurred while finding hotels by locations",
+                    exc_info=True,
+                    extra=extra,
+                )

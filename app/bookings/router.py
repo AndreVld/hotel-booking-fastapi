@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, Path, status
 
 from app.bookings.dao import BookingDAO
 from app.bookings.schemas import SBookings
-from app.exceptions import DateFromCannotBeAfterDateTo, RoomCannotBeBooked
+from app.config import settings
+from app.exceptions import (
+    DateFromCannotBeAfterDateTo,
+    RoomCannotBeBooked,
+    ServerErrorException,
+)
 from app.tasks.tasks import send_booking_confirmation_email
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -15,7 +20,10 @@ router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 @router.get("")
 async def get_bookings(user: Users = Depends(get_current_user)) -> list[SBookings]:
-    return await BookingDAO.find_all(user_id=user.id)
+    bookings = await BookingDAO.find_all(user_id=user.id)
+    if bookings is None:
+        raise ServerErrorException
+    return bookings
 
 
 @router.post("")
@@ -32,10 +40,13 @@ async def add_booking(
     booking = await BookingDAO.add(
         user_id=user.id, room_id=room_id, date_from=date_from, date_to=date_to
     )
-    if not booking:
+    if booking is None:
         raise RoomCannotBeBooked
-    booking_dict = SBookings.model_validate(booking).model_dump()
-    send_booking_confirmation_email.delay(booking_dict, user.email)
+
+    if settings.MODE != "TEST":
+        booking_dict = SBookings.model_validate(booking).model_dump()
+        send_booking_confirmation_email.delay(booking_dict, user.email)
+
     return booking
 
 
@@ -44,4 +55,5 @@ async def delete_booking(
     booking_id: Annotated[int, Path()],
     user: Annotated[Users, Depends(get_current_user)],
 ):
-    return await BookingDAO.delete(booking_id=booking_id, user_id=user.id)
+    if await BookingDAO.delete(booking_id=booking_id, user_id=user.id) == "Exp":
+        raise ServerErrorException
