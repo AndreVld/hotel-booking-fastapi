@@ -2,6 +2,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import Path, Query
+from fastapi_versioning import version
 
 from app.exceptions import DateFromCannotBeAfterDateTo, ServerErrorException
 from app.hotels.rooms.dao import RoomsDAO
@@ -10,6 +11,7 @@ from app.hotels.router import router
 
 
 @router.get("/{hotel_id}/rooms")
+@version(1)
 async def get_rooms(
     hotel_id: Annotated[int, Path()],
     date_from: Annotated[date, Query()],

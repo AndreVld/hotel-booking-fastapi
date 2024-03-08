@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 from fastapi_cache.decorator import cache
+from fastapi_versioning import version
 
 from app.exceptions import (
     CannotBookHotelForLongPeriod,
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/hotels", tags=["Hotels / Rooms"])
 
 
 @router.get("/{location}")
+@version(1)
 async def get_hotels_by_location_and_date(
     location: str,
     date_from: Annotated[date, Query(description=f"example: {datetime.now().date()}")],
@@ -44,5 +46,6 @@ async def get_hotels_by_location_and_date(
 
 @router.get("/id/{hotel_id}")
 @cache(expire=60)
+@version(1)
 async def get_hotel_by_id(hotel_id: Annotated[int, Path()]) -> SHotels:
     return await HotelsDAO.find_by_id(hotel_id)

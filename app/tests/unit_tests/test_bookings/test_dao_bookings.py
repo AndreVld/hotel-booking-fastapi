@@ -30,26 +30,66 @@ async def test_find_all(user_id):
 @pytest.mark.parametrize(
     "room_id, date_from, date_to, free_rooms",
     [
-        (1, dt.strptime("2023-06-05", "%Y-%m-%d"), dt.strptime("2023-06-25", "%Y-%m-%d"), 5),
-        (2, dt.strptime("2023-04-01", "%Y-%m-%d"), dt.strptime("2023-04-19", "%Y-%m-%d"), 10),
-        (3, dt.strptime("2023-03-10", "%Y-%m-%d"), dt.strptime("2023-03-24", "%Y-%m-%d"), 15),
-        (4, dt.strptime("2023-03-10", "%Y-%m-%d"), dt.strptime("2023-03-24", "%Y-%m-%d"), 8),
+        (
+            1,
+            dt.strptime("2023-06-05", "%Y-%m-%d"),
+            dt.strptime("2023-06-25", "%Y-%m-%d"),
+            5,
+        ),
+        (
+            2,
+            dt.strptime("2023-04-01", "%Y-%m-%d"),
+            dt.strptime("2023-04-19", "%Y-%m-%d"),
+            10,
+        ),
+        (
+            3,
+            dt.strptime("2023-03-10", "%Y-%m-%d"),
+            dt.strptime("2023-03-24", "%Y-%m-%d"),
+            15,
+        ),
+        (
+            4,
+            dt.strptime("2023-03-10", "%Y-%m-%d"),
+            dt.strptime("2023-03-24", "%Y-%m-%d"),
+            8,
+        ),
     ],
 )
 async def test_get_num_of_available_rooms(room_id, date_from, date_to, free_rooms):
-    num_free_rooms = await BookingDAO.get_num_of_available_rooms(room_id, date_from, date_to)
+    num_free_rooms = await BookingDAO.get_num_of_available_rooms(
+        room_id, date_from, date_to
+    )
     assert num_free_rooms == free_rooms
 
 
 @pytest.mark.parametrize(
     "user_id, room_id, date_from, date_to, no_rooms_available",
     [
-        (1, 6, dt.strptime("2026-03-10", "%Y-%m-%d"), dt.strptime("2026-03-24", "%Y-%m-%d"), False),
+        (
+            1,
+            6,
+            dt.strptime("2026-03-10", "%Y-%m-%d"),
+            dt.strptime("2026-03-24", "%Y-%m-%d"),
+            False,
+        ),
         *[
-            (2, 1, dt.strptime("2026-07-10", "%Y-%m-%d"), dt.strptime("2026-07-24", "%Y-%m-%d"), False)
+            (
+                2,
+                1,
+                dt.strptime("2026-07-10", "%Y-%m-%d"),
+                dt.strptime("2026-07-24", "%Y-%m-%d"),
+                False,
+            )
             for _ in range(5)
         ],
-        (2, 1, dt.strptime("2026-07-10", "%Y-%m-%d"), dt.strptime("2026-07-24", "%Y-%m-%d"), True),
+        (
+            2,
+            1,
+            dt.strptime("2026-07-10", "%Y-%m-%d"),
+            dt.strptime("2026-07-24", "%Y-%m-%d"),
+            True,
+        ),
     ],
 )
 async def test_add_booking(user_id, room_id, date_from, date_to, no_rooms_available):

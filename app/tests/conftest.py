@@ -52,13 +52,13 @@ async def prepare_database():
 
 @pytest.fixture(scope="function")
 async def ac():
-    async with AsyncClient(app=fatapi_app, base_url="http://test") as client:
+    async with AsyncClient(app=fatapi_app, base_url="http://test/v1") as client:
         yield client
 
 
 @pytest.fixture(scope="session")
 async def authenticated_ac():
-    async with AsyncClient(app=fatapi_app, base_url="http://test") as client:
+    async with AsyncClient(app=fatapi_app, base_url="http://test/v1") as client:
         await client.post(
             "/auth/login",
             json={
