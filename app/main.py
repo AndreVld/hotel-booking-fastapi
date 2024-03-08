@@ -17,6 +17,7 @@ from app.database import engine
 from app.hotels.rooms.router import router as rooms_router
 from app.hotels.router import router as hotels_router
 from app.images.router import router as img_router
+from app.importer.router import router as import_file_router
 from app.logger import logger
 from app.pages.router import router as pages_router
 from app.users.router import router as users_router
@@ -41,6 +42,7 @@ app.include_router(hotels_router)
 app.include_router(rooms_router)
 app.include_router(pages_router)
 app.include_router(img_router)
+app.include_router(import_file_router)
 
 app = VersionedFastAPI(
     app, version_format="{major}", prefix_format="/v{major}", lifespan=lifespan
