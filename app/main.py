@@ -2,7 +2,6 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_versioning import VersionedFastAPI
@@ -19,8 +18,7 @@ from app.hotels.router import router as hotels_router
 from app.images.router import router as img_router
 from app.importer.router import router as import_file_router
 from app.logger import logger
-from app.pages.router import router as pages_router
-from app.users.router import router as users_router
+from app.users.router import auth_router, users_router
 
 
 @asynccontextmanager
@@ -36,19 +34,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(bookings_router)
 app.include_router(hotels_router)
 app.include_router(rooms_router)
-app.include_router(pages_router)
 app.include_router(img_router)
 app.include_router(import_file_router)
 
 app = VersionedFastAPI(
     app, version_format="{major}", prefix_format="/v{major}", lifespan=lifespan
 )
-
-app.mount(path="/static", app=StaticFiles(directory="app/static"), name="static")
 
 admin = Admin(app, engine, authentication_backend=auth_backend)
 

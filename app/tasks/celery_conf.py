@@ -18,7 +18,7 @@ celery_app.conf.beat_schedule = {
     },
     "check-in 3 days": {
         "task": "email.booking_reminder_3day",
-        #     'schedule' : 52, # seconds
+        # "schedule": 52,  # seconds
         "schedule": crontab(minute=30, hour=15),
     },
 }
