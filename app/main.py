@@ -1,10 +1,10 @@
-import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_versioning import VersionedFastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from redis import asyncio as aioredis
 from sqladmin import Admin
 
@@ -17,7 +17,6 @@ from app.hotels.rooms.router import router as rooms_router
 from app.hotels.router import router as hotels_router
 from app.images.router import router as img_router
 from app.importer.router import router as import_file_router
-from app.logger import logger
 from app.users.router import auth_router, users_router
 
 
@@ -42,6 +41,7 @@ app.include_router(rooms_router)
 app.include_router(img_router)
 app.include_router(import_file_router)
 
+
 app = VersionedFastAPI(
     app, version_format="{major}", prefix_format="/v{major}", lifespan=lifespan
 )
@@ -54,12 +54,19 @@ admin.add_view(HotelsAdmin)
 admin.add_view(RoomsAdmin)
 
 
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    logger.debug(
-        "Request handling time", extra={"process_time": round(process_time, 4)}
-    )
-    return response
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    excluded_handlers=[".*admin.*", "/metrics"],
+)
+instrumentator.instrument(app).expose(app)
+
+
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     start_time = time.time()
+#     response = await call_next(request)
+#     process_time = time.time() - start_time
+#     logger.debug(
+#         "Request handling time", extra={"process_time": round(process_time, 4)}
+#     )
+#     return response
